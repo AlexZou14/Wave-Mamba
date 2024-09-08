@@ -1,0 +1,1 @@
+CUDA_VISIBLE_DEVICES=0 python basicsr/train.py -opt /home/zwb/code/WaveMamba/options/train_wavemamba_uhdll.yml

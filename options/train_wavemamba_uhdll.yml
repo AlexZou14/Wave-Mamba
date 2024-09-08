@@ -1,0 +1,160 @@
+# general settings
+name: 001_WaveMamba_UHDLL
+# name: debug_FeMaSR
+model_type: FeMaSRModel 
+scale: &upscale 1
+num_gpu: 1 # set num_gpu: 0 for cpu mode
+manual_seed: 0
+
+# dataset and data loader settings
+datasets:
+  train:
+    name: General_Image_Train
+    type: PairedImageDataset
+
+    dataroot_gt: /home/zwb/code/Data/UHDLL/Train/gt
+    dataroot_lq: /home/zwb/code/Data/UHDLL/Train/input
+
+    io_backend:
+      type: disk
+    
+    gt_size: 512
+    use_resize_crop: False
+    use_flip: False
+    use_rot: False
+
+    # data loader
+    use_shuffle: true
+    geometric_augs: True
+    batch_size_per_gpu: &bsz 8 
+    num_worker_per_gpu: *bsz
+    dataset_enlarge_ratio: 1
+
+    prefetch_mode: cpu
+    num_prefetch_queue: *bsz
+
+  val:
+    name: General_Image_Valid
+    type: PairedImageDataset
+    
+    dataroot_gt: /home/zwb/code/Data/UHDLL/Test/gt
+    dataroot_lq: /home/zwb/code/Data/UHDLL/Test/input
+
+    gt_size: 512
+    io_backend:
+      type: disk
+    geometric_augs: True
+    use_resize_crop: False
+    use_flip: False
+    use_rot: False
+
+
+network_g:
+  type: WaveMamba
+  in_chn: 3
+  wf: 32
+  n_l_blocks: [1,2,4]
+  n_h_blocks: [1,1,2]
+  ffn_scale: 2.0
+
+network_d:
+  type: UNetDiscriminatorSN
+  num_in_ch: 3
+
+
+path:
+  pretrain_network_hq: ~
+  pretrain_network_g: ~ 
+  pretrain_network_d: ~
+  strict_load: false
+  resume_state: ~ 
+
+
+
+train:
+  optim_g:
+    type: AdamW
+    lr: !!float 5e-4 
+    weight_decay: !!float 1e-3
+    betas: [0.9, 0.99]
+  optim_d:
+    type: Adam
+    lr: !!float 4e-4
+    weight_decay: 0
+    betas: [0.9, 0.99]
+
+  scheduler:
+    type: CosineAnnealingRestartCyclicLR 
+    periods: [100, 100000]
+    restart_weights: [1, 1]
+    eta_mins: [0.0005, 0.0000001]
+
+  total_iter: 101000
+  warmup_iter: -1  # no warm up
+
+  pixel_opt:
+    type: L1Loss
+    loss_weight: 1.0 
+    reduction: mean
+  pixel_ssim_opt:
+    loss_weight: !!float 0.25
+
+  fft_opt:
+    type: FFTLoss
+    loss_weight: !!float 0.1
+
+
+  perceptual_opt:
+    type: LPIPSLoss
+    loss_weight: !!float 0
+    
+  gan_opt:
+    type: GANLoss
+    gan_type: hinge
+    real_label_val: 1.0
+    fake_label_val: 0.0
+    loss_weight: 0
+
+  codebook_opt:
+    loss_weight: 0
+  
+  semantic_opt:
+    loss_weight: 0
+
+  net_d_iters: 0
+  net_d_init_iters: !!float 0 
+
+val:
+  val_freq: !!float 5000 
+  save_img: true
+
+  key_metric: psnr
+  metrics:
+    psnr: 
+      type: psnr 
+      crop_border: 4
+      test_y_channel: true
+    ssim:
+      type: ssim 
+      crop_border: 4
+      test_y_channel: true
+    lpips:
+      type: lpips 
+      better: lower
+
+# logging settings
+logger:
+  print_freq: 100
+  save_checkpoint_freq: !!float 5000
+  save_latest_freq: !!float 1e4
+  show_tf_imgs_freq: !!float 5000
+  use_tb_logger: true
+
+# wandb:
+    # project: ESRGAN
+    # resume_id: ~
+
+dist_params:
+  backend: nccl
+  port: 16500 #29500
+find_unused_parameters: true
