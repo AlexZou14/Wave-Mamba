@@ -1,4 +1,6 @@
 # Wave-Mamba: Wavelet State Space Model for Ultra-High-Definition Low-Light Image Enhancement (ACMMM2024)
+![log.png](Figures/log.png)
+
 This is the office implementation of ***Wave-Mamba: Wavelet State Space Model for Ultra-High-Definition Low-Light Image Enhancement, ACMMM2024.***
 
 <a href="https://alexzou14.github.io">Wenbin Zou*,</a> Hongxia Gao <sup>✉️</sup>, Weipeng Yang, and Tongtong Liu
