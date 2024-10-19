@@ -1,6 +1,6 @@
 # Wave-Mamba: Wavelet State Space Model for Ultra-High-Definition Low-Light Image Enhancement (ACMMM2024)
 <p align="center">
-    <img src="Figures/logo.png" width="200">
+    <img src="Figures/logo.png" width="100">
 </p>
 
 This is the office implementation of ***Wave-Mamba: Wavelet State Space Model for Ultra-High-Definition Low-Light Image Enhancement, ACMMM2024.***
